@@ -16,14 +16,13 @@ class Keyboard:
         
     def get_empty_keyboard(self)->list:
         """Returns an array of 1's representing the keyboard."""
-        print([[1]*len(self.keyboard[0])]*len(self.keyboard))
         return [[1]*len(self.keyboard[0])]*len(self.keyboard)
 
     def get_key_location(self, key)->list:
         """Returns the location of the key on the keyboard."""
         for row in self.keyboard:
             if key in row:
-                return (self.keyboard.index(row), row.index(key))
+                return (row.index(key), self.keyboard.index(row))
         raise Exception("Key not found on keyboard.")
 
     def get_grid(self) -> Grid:
@@ -38,6 +37,8 @@ class Keyboard:
         """
         key_position = self.get_key_location(key)
         grid = self.get_grid()
+        print("pass")
+        print(location, key_position)
         start = grid.node(location[0], location[1])
         end = grid.node(key_position[0], key_position[1])
 
