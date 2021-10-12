@@ -3,9 +3,10 @@ This file will generate sequences for complex bits of the script.
 This includes the path to enter a tag on the keyboard, or the stages to enable/disable.
 """
 
-from numpy.core.numeric import full
 from enums import *
 import consts
+from buttons import *
+
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
@@ -52,9 +53,19 @@ def generate_keyboard_path(tag: str) -> list:
     """Generates a list of keyboard paths to enter a tag."""
     keyboard = Keyboard()
     full_path = [] # the full path is a list of lists of coordinates to press the keys
+    full_sequence = [] # the full sequence is a list of list of tuples of keys and frames
     path = [] # the path is the temporary list of coordinates to go from one key to another
     location = [0, 0] #This is the initial location of the cursor on the beyboard.
     for char in tag:
+        if tag == " ":
+            full_path.append(" ")
+            continue
         path, location = keyboard.pathfind_key(char, location) # the position of the current key is the new starting point for the next key
         full_path.append(path)
-    return full_path
+    
+    for move in full_path:
+        if move == " ":
+            extend(full_sequence, Buttons.Y)
+            continue
+
+    return full_sequence
