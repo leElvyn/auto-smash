@@ -23,3 +23,6 @@ class Action:
     def __init__(self, button: Buttons, duration: int = 1):
         self.button = button
         self.duration = duration
+
+    def __repr__(self):
+        return str(f"({self.duration}, {self.button})")

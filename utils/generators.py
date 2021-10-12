@@ -11,6 +11,42 @@ from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 
+def flatten_list(list_of_lists):
+    """Flattens a list of lists into a single list."""
+    flattened_list = []
+    for item in list_of_lists:
+        if isinstance(item, list):
+            flattened_list.extend(item)
+        else:
+            flattened_list.append(item)
+    return flattened_list
+
+
+def generate_sequence_from_list(list_of_positions):
+    sequence = []
+    # reset the location to the initial position
+    location = [0, 0] 
+    # This is because at every iteration of that nex loop, we compare the previous location with the current one to figure out what changed
+    full_path = flatten_list(list_of_positions)
+    for move in full_path:
+        if isinstance(move, Action):
+            extend(sequence, move) # we just append the Action to the full sequence
+            continue
+        
+        # here, we are comparing the previous location with the current one
+        # if you can improve this, please do so
+        if location[0] < move[0]:
+            extend(sequence, Buttons.RIGHT)
+        elif location[0] > move[0]:
+            extend(sequence, Buttons.LEFT)
+        elif location[1] < move[1]:
+            extend(sequence, Buttons.DOWN)
+        elif location[1] > move[1]:
+            extend(sequence, Buttons.UP)
+        location = move
+    
+    return sequence
+
 class Keyboard:
     def __init__(self) -> None:
         self.keyboard = [consts.KEYBOARD_LOWERCASE_0, consts.KEYBOARD_LOWERCASE_1, consts.KEYBOARD_LOWERCASE_2, consts.KEYBOARD_LOWERCASE_3]
@@ -48,12 +84,12 @@ class Keyboard:
         print('operations:', runs, 'path length:', len(path))
         print(grid.grid_str(path=path, start=start, end=end))
         return path, key_position
+
         
 def generate_keyboard_path(tag: str) -> list:
     """Generates a list of keyboard paths to enter a tag."""
     keyboard = Keyboard()
     full_path = [] # the full path is a list of lists of coordinates to press the keys
-    full_sequence = [] # the full sequence is a list of list of tuples of keys and frames
     path = [] # the path is the temporary list of coordinates to go from one key to another
     location = [0, 0] #This is the initial location of the cursor on the beyboard.
     for char in tag:
@@ -64,15 +100,8 @@ def generate_keyboard_path(tag: str) -> list:
         full_path.append(path) # add the path from the previous key to the current key to the full path
         full_path.append(Action(Buttons.A))
     
-    # reset the location to the initial position
-    location = [0, 0] 
-    # This is because at every iteration of that nex loop, we compare the previous location with the current one to figure out what changed
-    full_path = [item for sublist in full_path for item in sublist]
-    for move in full_path:
-        if isinstance(move, Action):
-            full_sequence.append(move) # we just append the Action to the full sequence
-            continue
-        
-
-        extend(full_sequence, )
+    full_sequence = generate_sequence_from_list(full_path)
+    print(full_sequence)
+    extend(full_sequence, Action(Buttons.PLUS))
+    extend(full_sequence, Action(Buttons.PLUS), delay=3)
     return full_sequence
