@@ -1,8 +1,5 @@
 """
 This is that CLI that allows for the creation of a smash bros ultimate profile.
-A "sequence" is a pre-defined set of moves that can be used, if combined to create a profile.
-
-A sequence can be, for instance, what buttons need to be pressed to enter the controls menu.
 """
 
 from enums import *
