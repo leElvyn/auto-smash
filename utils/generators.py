@@ -58,14 +58,21 @@ def generate_keyboard_path(tag: str) -> list:
     location = [0, 0] #This is the initial location of the cursor on the beyboard.
     for char in tag:
         if tag == " ":
-            full_path.append(" ")
+            full_path.append(Action(Buttons.Y))
             continue
         path, location = keyboard.pathfind_key(char, location) # the position of the current key is the new starting point for the next key
-        full_path.append(path)
+        full_path.append(path) # add the path from the previous key to the current key to the full path
+        full_path.append(Action(Buttons.A))
     
+    # reset the location to the initial position
+    location = [0, 0] 
+    # This is because at every iteration of that nex loop, we compare the previous location with the current one to figure out what changed
+    full_path = [item for sublist in full_path for item in sublist]
     for move in full_path:
-        if move == " ":
-            extend(full_sequence, Buttons.Y)
+        if isinstance(move, Action):
+            full_sequence.append(move) # we just append the Action to the full sequence
             continue
+        
 
+        extend(full_sequence, )
     return full_sequence
