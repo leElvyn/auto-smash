@@ -20,4 +20,4 @@ Currently, there are only one of these settings, others are reserved for further
 
 ### Script bytes :
 
-Every other bytes are used to store the script. every input is a combinaison of 2 bytes (limiting the length of a maximum of 512 inputs), the first one being the length, in frames, of the input, and the second one being the button. Buttons values can be found [here](docs/buttons-reference.md).
+Every other bytes are used to store the script. every input is a combinaison of 2 bytes (limiting the length of a maximum of 512 inputs), the first one being the length, in frames, of the input, and the second one being the button. Buttons values can be found [here](buttons-reference.md).
