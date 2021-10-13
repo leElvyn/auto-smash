@@ -3,6 +3,7 @@ This file will generate sequences for complex bits of the script.
 This includes the path to enter a tag on the keyboard, or the stages to enable/disable.
 """
 
+from numpy.core.numeric import full
 from enums import *
 import consts
 from buttons import *
@@ -30,7 +31,7 @@ def generate_sequence_from_list(list_of_positions):
     full_path = flatten_list(list_of_positions)
     for move in full_path:
         if isinstance(move, Action):
-            extend(sequence, move) # we just append the Action to the full sequence
+            sequence.append(move) # we just append the Action to the full sequence
             continue
         
         # here, we are comparing the previous location with the current one
@@ -74,15 +75,12 @@ class Keyboard:
         """
         key_position = self.get_key_location(key)
         grid = self.get_grid()
-        print("pass")
-        print(location, key_position)
         start = grid.node(location[0], location[1])
         end = grid.node(key_position[0], key_position[1])
 
         finder = AStarFinder(diagonal_movement=DiagonalMovement.never)
         path, runs = finder.find_path(start, end, grid)
         print('operations:', runs, 'path length:', len(path))
-        print(grid.grid_str(path=path, start=start, end=end))
         return path, key_position
 
         
@@ -93,15 +91,14 @@ def generate_keyboard_path(tag: str) -> list:
     path = [] # the path is the temporary list of coordinates to go from one key to another
     location = [0, 0] #This is the initial location of the cursor on the beyboard.
     for char in tag:
-        if tag == " ":
-            full_path.append(Action(Buttons.Y))
+        if char == " ":
+            extend(full_path, Buttons.Y)
             continue
         path, location = keyboard.pathfind_key(char, location) # the position of the current key is the new starting point for the next key
         full_path.append(path) # add the path from the previous key to the current key to the full path
-        full_path.append(Action(Buttons.A))
+        extend(full_path, Buttons.A) # press A after each key
     
     full_sequence = generate_sequence_from_list(full_path)
-    print(full_sequence)
-    extend(full_sequence, Action(Buttons.PLUS))
-    extend(full_sequence, Action(Buttons.PLUS), delay=3)
+    extend(full_sequence, Buttons.PLUS)
+    extend(full_sequence, Buttons.PLUS, delay=3)
     return full_sequence
