@@ -1,4 +1,4 @@
-<img src="assets/logo" alt="logo auto-smash" height="64" align="center" />
+<img src="assets/logo.png" alt="logo auto-smash" height="64" align="center" />
 
 # Concept
 
