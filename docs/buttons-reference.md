@@ -20,8 +20,10 @@ D_LEFT = 11
 D_RIGHT = 12
 L = 13
 R = 14
-PLUS = 15
-MINUS = 16
+ZL = 15
+ZR = 16
+PLUS = 17
+MINUS = 18
 ```
 
 Notes : 

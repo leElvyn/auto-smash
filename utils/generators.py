@@ -48,6 +48,8 @@ def generate_sequence_from_list(list_of_positions):
     
     return sequence
 
+    ### methods for generating keyboard paths ###
+
 class Keyboard:
     def __init__(self) -> None:
         self.keyboard = [consts.KEYBOARD_LOWERCASE_0, consts.KEYBOARD_LOWERCASE_1, consts.KEYBOARD_LOWERCASE_2, consts.KEYBOARD_LOWERCASE_3]
@@ -102,3 +104,27 @@ def generate_keyboard_path(tag: str) -> list:
     extend(full_sequence, Buttons.PLUS)
     extend(full_sequence, Buttons.PLUS, delay=3)
     return full_sequence
+
+    ### methods for generating controls paths ###
+
+
+class Controls:
+    """
+    an instance of this object represent a control scheme. The default values are for the default control scheme.
+    """
+    A = Controls.NORMAL_ATTACK
+    B = Controls.SPECIAL_ATTACK
+    X = Controls.JUMP
+    Y = Controls.JUMP
+
+    L = Controls.GRAB
+    R = Controls.GRAB
+    ZL = Controls.SHIELD
+    ZR = Controls.SHIELD
+
+    R_STICK = Controls.SMASH_ATTACKS
+
+    D_UP = Controls.UP_TAUNT
+    D_DOWN = Controls.DOWN_TAUNT
+    D_LEFT = Controls.SIDE_TAUNT
+    D_RIGHT = Controls.SIDE_TAUNT

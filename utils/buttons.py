@@ -1,7 +1,7 @@
 """
 utils for generating sequences of buttons
 """
-from enums import Buttons
+from enums import *
 
 def add_button(sequence: list, button: Buttons, duration: int):
     """

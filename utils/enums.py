@@ -19,8 +19,29 @@ class Buttons(Enum):
     D_RIGHT = 12
     L = 13
     R = 14
-    PLUS = 15
-    MINUS = 16
+    ZL = 15
+    ZR = 16
+    PLUS = 17
+    MINUS = 18
+
+    # currently, axes are just for enums   
+    L_STICK = None
+    R_STICK = None
     # NEXT TO BE IMPLEMENTED
 
 
+class Controls(Enum):
+    """
+    list of controls a button can be assigned to
+    """ 
+    NORMAL_ATTACK = 0
+    SPECIAL_ATTACK = 1
+    JUMP = 2
+    SHIELD = 3
+    GRAB = 4
+    UP_TAUNT = 5
+    SIDE_TAUNT = 6
+    DOWN_TAUNT = 7
+    # Stick controls
+    SMASH_ATTACKS = 8
+    TILT_ATTACKS = 9
