@@ -17,3 +17,11 @@ CONTROLS_ORDER_BUTTONS = [
     Controls.SHIELD,
     Controls.GRAB
 ]
+CONTROLS_ORDER_STICK = [
+    Controls.NORMAL_ATTACK,
+    Controls.SPECIAL_ATTACK,
+    Controls.JUMP,
+    Controls.SHIELD,
+    Controls.GRAB,
+    Controls.SMASH_ATTACKS
+]

@@ -146,13 +146,17 @@ class ControlScheme:
                 changed_controls.append(control)
         return changed_controls
 
-    def select_control(self, default: Controls, new_control: Controls) -> list:
+    def select_control(self, default: Controls, new_control: Controls, is_stick = False) -> list:
         """
         Returns a sequence to go from the default control to the new control (for instance, i want Y mapped to grab, so go from JUMP, the third item in the list, to GRAB, the fifth item in the sequence).
         """
         sequence = []
-        default_position = CONTROLS_ORDER_BUTTONS.index(default)
-        new_position = CONTROLS_ORDER_BUTTONS.index(new_control)
+        if not is_stick:
+            default_position = CONTROLS_ORDER_BUTTONS.index(default) + 1
+            new_position = CONTROLS_ORDER_BUTTONS.index(new_control) + 1
+        else:
+            default_position = CONTROLS_ORDER_STICK.index(default) + 1
+            new_position = CONTROLS_ORDER_STICK.index(new_control) + 1
         difference = new_position - default_position
         if difference == 0:
             raise Exception("The new control is the same as the default control.")
@@ -167,13 +171,25 @@ class ControlScheme:
         delay(sequence, 10)
         return sequence
 
-    def crawl_left_row(self, sequence, left_row_changes, LEFT_ROW):
-        cursor_location = 0 # location of the cursor on the left row only.
-        for control in left_row_changes:
-            new_cursor_location = LEFT_ROW.index(control)
+    def crawl_row(self, sequence, changes, ROW, cursor_location, reverse = False) -> int:
+        for control in changes:
+            new_cursor_location = ROW.index(control)
+            for i in range(new_cursor_location - cursor_location):
+                extend(sequence, Buttons.UP if reverse else Buttons.DOWN)
+                cursor_location += 1
+            extend(sequence, Buttons.A)
+            delay(sequence, 10)
+            extend(sequence, self.select_control(getattr(self.__class__, control), getattr(self, control)))
+        return cursor_location
+
+    def crawl_right_row(self, sequence, right_row_changes, RIGHT_ROW, is_reverse = False):
+        cursor_location = 0 # location of the cursor on the right row only.
+        for control in right_row_changes:
+            new_cursor_location = RIGHT_ROW.index(control)
             for i in range(new_cursor_location - cursor_location):
                 extend(sequence, Buttons.DOWN)
             extend(sequence, Buttons.A)
+            delay(sequence, 10)
             extend(sequence, self.select_control(getattr(self.__class__, control), getattr(self, control)))
         return cursor_location
 
@@ -225,9 +241,10 @@ class ControlScheme:
         go_to_right_row = len(right_row_changes) > 0
         go_to_extras = len(extra_controls_changes) > 0
         go_to_c_stick = MIDDLE_ROW in changed_controls
+        cursor_location = 0
 
-        if go_to_left_row and not go_to_right_row:
-            cursor_location = self.crawl_left_row(sequence, left_row_changes, LEFT_ROW)
+        if go_to_left_row:
+            cursor_location = self.crawl_row(sequence, left_row_changes, LEFT_ROW, cursor_location)
             if go_to_extras:
                 if cursor_location != 4: #if we aren't already on the other settings menu 
                     for i in range(4 - cursor_location):
@@ -235,7 +252,20 @@ class ControlScheme:
                 extend(sequence, Buttons.A)
                 delay(sequence, 20)
                 self.crawl_extras(sequence, extra_controls_changes, EXTRA_CONTROLS)
-            
+            if go_to_c_stick or go_to_right_row:
+
+                if cursor_location < 3: #if we aren't already on the the down taunt button, or the other settings, both lead to the c stick
+                    for i in range(3 - cursor_location):
+                        extend(sequence, Buttons.DOWN)
+                extend(sequence, Buttons.RIGHT)
+                if go_to_c_stick:
+                    extend(sequence, Buttons.A)
+                    delay(sequence, 10)
+                    self.select_control(self.__class__.R_STICK, self.R_STICK, True)
+                extend(sequence, Buttons.RIGHT)
+                if go_to_right_row:
+                    self.crawl_row(sequence, right_row_changes, RIGHT_ROW, cursor_location, True)
+        extend(sequence, Buttons.PLUS)
         return sequence
 
 def generate_controls_sequence_gc():
@@ -245,5 +275,7 @@ def generate_controls_sequence_gc():
     """
     controller = ControlScheme()
     controller.L = Controls.SPECIAL_ATTACK
+    controller.D_UP = Controls.SHIELD
     controller.extra_tap_jump = 0
+    controller.R_STICK = Controls.NORMAL_ATTACK
     return controller.generate_controls_sequence_gc()
