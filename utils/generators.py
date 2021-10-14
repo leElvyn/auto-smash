@@ -5,7 +5,7 @@ This includes the path to enter a tag on the keyboard, or the stages to enable/d
 
 from numpy.core.numeric import full
 from enums import *
-import consts
+from consts import *
 from buttons import *
 
 from pathfinding.core.diagonal_movement import DiagonalMovement
@@ -52,7 +52,7 @@ def generate_sequence_from_list(list_of_positions):
 
 class Keyboard:
     def __init__(self) -> None:
-        self.keyboard = [consts.KEYBOARD_LOWERCASE_0, consts.KEYBOARD_LOWERCASE_1, consts.KEYBOARD_LOWERCASE_2, consts.KEYBOARD_LOWERCASE_3]
+        self.keyboard = [KEYBOARD_LOWERCASE_0, KEYBOARD_LOWERCASE_1, KEYBOARD_LOWERCASE_2, KEYBOARD_LOWERCASE_3]
         
     def get_empty_keyboard(self)->list:
         """Returns an array of 1's representing the keyboard."""
@@ -108,7 +108,7 @@ def generate_keyboard_path(tag: str) -> list:
     ### methods for generating controls paths ###
 
 
-class Controls:
+class ControlScheme:
     """
     an instance of this object represent a control scheme. The default values are for the default control scheme.
     """
@@ -119,12 +119,131 @@ class Controls:
 
     L = Controls.GRAB
     R = Controls.GRAB
-    ZL = Controls.SHIELD
-    ZR = Controls.SHIELD
+    Z = Controls.SHIELD
 
     R_STICK = Controls.SMASH_ATTACKS
 
     D_UP = Controls.UP_TAUNT
-    D_DOWN = Controls.DOWN_TAUNT
-    D_LEFT = Controls.SIDE_TAUNT
+    D_MIDDLE = Controls.DOWN_TAUNT
     D_RIGHT = Controls.SIDE_TAUNT
+
+    extra_rumbles = 1 # 0 for left, 1 for right
+    extra_quick_smash = 1 # same
+    extra_tap_jump = 1 #same 
+    extra_sensibility = 1 # 0-2 for sensibility, left to right
+
+
+    def get_changed_controls(self) -> list:
+        """
+        Returns a list of controls that are different from the default controls.
+        """
+        list_of_attributes = [a for a in dir(self) if not a.startswith('__')]
+        changed_controls = []
+        for control in list_of_attributes:
+            if callable(getattr(self, control)):
+                continue
+            if getattr(self, control) != getattr(self.__class__, control):
+                changed_controls.append(control)
+        return changed_controls
+
+    def select_control(self, default: Controls, new_control: Controls) -> list:
+        """
+        Returns a sequence to go from the default control to the new control (for instance, i want Y mapped to grab, so go from JUMP, the third item in the list, to GRAB, the fifth item in the sequence).
+        """
+        sequence = []
+        default_position = CONTROLS_ORDER_BUTTONS.index(default)
+        new_position = CONTROLS_ORDER_BUTTONS.index(new_control)
+        difference = new_position - default_position
+        if difference == 0:
+            raise Exception("The new control is the same as the default control.")
+        if difference < 0:
+            for i in range(abs(difference)):
+                extend(sequence, Buttons.UP)
+        else:
+            for i in range(difference):
+                extend(sequence, Buttons.DOWN)
+            
+        extend(sequence, Buttons.A)
+        delay(sequence, 10)
+        return sequence
+
+    def crawl_left_row(self, sequence, left_row_changes, LEFT_ROW):
+        cursor_location = 0 # location of the cursor on the left row only.
+        for control in left_row_changes:
+            new_cursor_location = LEFT_ROW.index(control)
+            for i in range(new_cursor_location - cursor_location):
+                extend(sequence, Buttons.DOWN)
+            extend(sequence, Buttons.A)
+            extend(sequence, self.select_control(getattr(self.__class__, control), getattr(self, control)))
+        return cursor_location
+
+    def crawl_extras(self, sequence, extra_controls_changes, EXTRA_CONTROLS):
+        cursor_location = 0
+        for control in extra_controls_changes:
+            new_cursor_location = EXTRA_CONTROLS.index(control)
+            for i in range(new_cursor_location - cursor_location):
+                extend(sequence, Buttons.DOWN)
+
+            if control != "extra_sensibility": #sensibility doesn't work the same way
+                # we always need to press left to change the control
+                extend(sequence, Buttons.LEFT)
+            
+            else:
+                if getattr(self, control) == 0:
+                    extend(sequence, Buttons.LEFT)
+
+                elif getattr(self, control) == 2:
+                    extend(sequence, Buttons.LEFT, Buttons.RIGHT)
+        extend(sequence, Buttons.PLUS)
+
+    def generate_controls_sequence_gc(self):
+        """
+        Returns a list of inputs to change the control scheme.
+        This will probably be ugly. 
+        Here, we need to generate a sequence that goes to the right controls to change.
+        Currently, for gamecube controller, there are basically two rows : 
+        - one with L, DPAD, and extra options.
+        - one with Z, R, A, B, X, Y
+        There is also the C stick between the 2 rows. 
+        
+        This section is pretty hard to understand, due to attributes of objects. 
+        Sometimes, an attribute is known with 
+        """
+        changed_controls = self.get_changed_controls()
+        sequence = []
+
+        LEFT_ROW = ["L", "D_UP", "D_MIDDLE", "D_RIGHT"]
+        RIGHT_ROW = ["R", "Z", "X", "Y", "A", "B"]
+        EXTRA_CONTROLS = ["extra_rumbles", "extra_quick_smash", "extra_tap_jump", "extra_sensibility"]
+        MIDDLE_ROW = "R_STICK"
+
+        left_row_changes = [control for control in changed_controls if control in LEFT_ROW] # control is the name of the attributes
+        right_row_changes = [control for control in changed_controls if control in RIGHT_ROW]
+        extra_controls_changes = [control for control in changed_controls if control in EXTRA_CONTROLS]
+
+        go_to_left_row = len(left_row_changes) > 0
+        go_to_right_row = len(right_row_changes) > 0
+        go_to_extras = len(extra_controls_changes) > 0
+        go_to_c_stick = MIDDLE_ROW in changed_controls
+
+        if go_to_left_row and not go_to_right_row:
+            cursor_location = self.crawl_left_row(sequence, left_row_changes, LEFT_ROW)
+            if go_to_extras:
+                if cursor_location != 4: #if we aren't already on the other settings menu 
+                    for i in range(4 - cursor_location):
+                        extend(sequence, Buttons.DOWN)
+                extend(sequence, Buttons.A)
+                delay(sequence, 20)
+                self.crawl_extras(sequence, extra_controls_changes, EXTRA_CONTROLS)
+            
+        return sequence
+
+def generate_controls_sequence_gc():
+    """
+    Returns a list of inputs to change the control scheme.
+    This will probably be ugly.
+    """
+    controller = ControlScheme()
+    controller.L = Controls.SPECIAL_ATTACK
+    controller.extra_tap_jump = 0
+    return controller.generate_controls_sequence_gc()

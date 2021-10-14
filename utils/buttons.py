@@ -16,6 +16,12 @@ def extend(sequence, button: Buttons, duration = 1, delay = 1):
     add_button(sequence, Buttons.NOTHING, delay)
     add_button(sequence, button, duration)
 
+def delay(sequence, delay: int):
+    """
+    add a delay to a sequence
+    """
+    add_button(sequence, Buttons.NOTHING, delay)
+
 class Action:
     """
     An action is a press of a button. It contains a button and a duration.
