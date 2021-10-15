@@ -123,9 +123,9 @@ class ControlScheme:
 
     R_STICK = Controls.SMASH_ATTACKS
 
-    D_UP = Controls.UP_TAUNT
-    D_MIDDLE = Controls.DOWN_TAUNT
-    D_RIGHT = Controls.SIDE_TAUNT
+    D_UP = Controls.TAUNT
+    D_MIDDLE = Controls.TAUNT
+    D_RIGHT = Controls.TAUNT
 
     extra_rumbles = 1 # 0 for left, 1 for right
     extra_quick_smash = 1 # same
@@ -146,17 +146,21 @@ class ControlScheme:
                 changed_controls.append(control)
         return changed_controls
 
-    def select_control(self, default: Controls, new_control: Controls, is_stick = False) -> list:
+    def select_control(self, default: Controls, new_control: Controls, is_stick = False, is_dpad = False) -> list:
         """
         Returns a sequence to go from the default control to the new control (for instance, i want Y mapped to grab, so go from JUMP, the third item in the list, to GRAB, the fifth item in the sequence).
+        *sight* DPAD have different controls
         """
         sequence = []
-        if not is_stick:
-            default_position = CONTROLS_ORDER_BUTTONS.index(default) + 1
-            new_position = CONTROLS_ORDER_BUTTONS.index(new_control) + 1
-        else:
+        if is_stick:
             default_position = CONTROLS_ORDER_STICK.index(default) + 1
             new_position = CONTROLS_ORDER_STICK.index(new_control) + 1
+        elif is_dpad:
+            default_position = CONTROLS_ORDER_DPAD.index(default) + 1
+            new_position = CONTROLS_ORDER_DPAD.index(new_control) + 1
+        else:
+            default_position = CONTROLS_ORDER_BUTTONS.index(default) + 1
+            new_position = CONTROLS_ORDER_BUTTONS.index(new_control) + 1
         difference = new_position - default_position
         if difference == 0:
             raise Exception("The new control is the same as the default control.")
@@ -171,7 +175,7 @@ class ControlScheme:
         delay(sequence, 10)
         return sequence
 
-    def crawl_row(self, sequence, changes, ROW, cursor_location, reverse = False) -> int:
+    def crawl_row(self, sequence, changes, ROW, cursor_location, reverse = False, is_left_row = False) -> int:
         for control in changes:
             new_cursor_location = ROW.index(control)
             for i in range(new_cursor_location - cursor_location):
@@ -179,7 +183,7 @@ class ControlScheme:
                 cursor_location += 1
             extend(sequence, Buttons.A)
             delay(sequence, 10)
-            extend(sequence, self.select_control(getattr(self.__class__, control), getattr(self, control)))
+            extend(sequence, self.select_control(getattr(self.__class__, control), getattr(self, control), is_dpad=True if cursor_location > 0 and cursor_location < 4 and is_left_row else False))
         return cursor_location
 
     def crawl_right_row(self, sequence, right_row_changes, RIGHT_ROW, is_reverse = False):
@@ -244,7 +248,7 @@ class ControlScheme:
         cursor_location = 0
 
         if go_to_left_row:
-            cursor_location = self.crawl_row(sequence, left_row_changes, LEFT_ROW, cursor_location)
+            cursor_location = self.crawl_row(sequence, left_row_changes, LEFT_ROW, cursor_location, is_left_row=True)
             if go_to_extras:
                 if cursor_location != 4: #if we aren't already on the other settings menu 
                     for i in range(4 - cursor_location):
@@ -252,6 +256,7 @@ class ControlScheme:
                 extend(sequence, Buttons.A)
                 delay(sequence, 20)
                 self.crawl_extras(sequence, extra_controls_changes, EXTRA_CONTROLS)
+                cursor_location = 4
             if go_to_c_stick or go_to_right_row:
 
                 if cursor_location < 3: #if we aren't already on the the down taunt button, or the other settings, both lead to the c stick

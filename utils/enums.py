@@ -39,9 +39,9 @@ class Controls(Enum):
     JUMP = 2
     SHIELD = 3
     GRAB = 4
-    UP_TAUNT = 5
-    SIDE_TAUNT = 6
-    DOWN_TAUNT = 7
+    # taunt only appears on the corresponding DPAD, so no need to put the 3 directions
+    TAUNT = 5
+
     # Stick controls
-    SMASH_ATTACKS = 8
-    TILT_ATTACKS = 9
+    SMASH_ATTACKS = 6
+    TILT_ATTACKS = 7

@@ -25,3 +25,11 @@ CONTROLS_ORDER_STICK = [
     Controls.GRAB,
     Controls.SMASH_ATTACKS
 ]
+CONTROLS_ORDER_DPAD = [
+    Controls.NORMAL_ATTACK,
+    Controls.SPECIAL_ATTACK,
+    Controls.JUMP,
+    Controls.SHIELD,
+    Controls.GRAB,
+    Controls.TAUNT
+]
