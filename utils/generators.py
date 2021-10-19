@@ -111,6 +111,8 @@ def generate_keyboard_path(tag: str) -> list:
 class ControlScheme:
     """
     an instance of this object represent a control scheme. The default values are for the default control scheme.
+    
+    TO BE FINISHED
     """
     A = Controls.NORMAL_ATTACK
     B = Controls.SPECIAL_ATTACK
