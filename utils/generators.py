@@ -4,6 +4,7 @@ This includes the path to enter a tag on the keyboard, or the stages to enable/d
 """
 
 from numpy.core.numeric import full
+from typing import TYPE_CHECKING, Sequence
 from enums import *
 from consts import *
 from buttons import *
@@ -286,3 +287,105 @@ def generate_controls_sequence_gc():
     controller.extra_tap_jump = 0
     controller.R_STICK = Controls.NORMAL_ATTACK
     return controller.generate_controls_sequence_gc()
+
+class Stages:
+    """I don't want to do that ... please"""
+    pass
+
+class RuleSet:
+    style = 0 # 0 : time, 1 : stock, 2 : stamina
+    stock = 3
+    time = 0 # 0 is inf. 1 is 1:00, 2 is 1:30 ... 7 min is 9 (TimeValues.inf)
+    fs_meter = False
+    spirits = False
+    cpu_lvl = 3
+    damage_handicap = False
+    stage_selection = 0 # StageSelectionType.anyone
+    items = None
+    stages = Stages()
+    
+    # advanced
+    first_to = 1
+    stage_morph = False
+    stage_hazards = True 
+    friendly_fire = False
+    launch_rate = 1.0
+    underdog_boost = False
+    pause = True
+    score = False
+    show_damage = True
+
+    sequence = []
+
+    def __init__(self):
+        self.style = 1 # competitive is in stock.
+
+    def get_changed_rules(self, attributes):
+        """
+        Takes a list of attribute names (str) and compares the default value with the self value
+        """
+
+        default = []
+        modified = []
+        for rule in attributes:
+            if callable(getattr(self, rule)):
+                continue
+            default.append(getattr(self.__class__, rule))
+            modified.append(getattr(self, rule))
+        return default, modified
+
+    def edit_boolean_field(self, new_option):
+        if new_option == True:
+            extend(self.sequence, Buttons.RIGHT, delay=4)
+        else:
+            extend(self.sequence, Buttons.LEFT, delay=4)
+        
+    def edit_int_field(self, old, new):
+        movement = new - old
+
+        for _ in range(abs(movement)):
+            if movement > 0:
+                extend(self.sequence, Buttons.RIGHT, delay=4)
+            else:
+                extend(self.sequence, Buttons.LEFT, delay=4)
+
+    def crawl_row(self, default, modified):
+        if len(default) != len(modified):
+            raise Exception
+        for i in range(len(default)):
+            if default[i] != modified[i]:
+                if type(modified[i]) == bool:
+                    self.edit_boolean_field(modified)
+                elif type(modified[i]) == int:
+                    self.edit_int_field(default[i], modified[i])
+            extend(self.sequence, Buttons.DOWN, delay=5)
+
+    def generate_ruleset_sequence(self):
+        """This method is a flow, from the normal rules, to the items, to the stages, to the advanced."""
+        # normal options are the easiest
+        default, modified = self.get_changed_rules(RULESET_ORDERS[0])
+        self.crawl_row(default, modified)
+
+        # Next are items 
+        # we just disable items.
+        extend(self.sequence, Buttons.A, delay=10)
+        extend(self.sequence, Buttons.LEFT, delay=3)
+        extend(self.sequence, Buttons.A, delay=5)
+        extend(self.sequence, Buttons.B, delay=25)
+        extend(self.sequence, Buttons.DOWN, delay=4)
+
+        # Stages
+        # I don't wanna do that
+        # stages
+        extend(self.sequence, Buttons.DOWN, delay=4)
+        
+        extend(self.sequence, Buttons.A, delay = 7)
+        extend(self.sequence, Buttons.DOWN, delay=4)
+        default, modified = self.get_changed_rules(RULESET_ORDERS[3])
+        self.crawl_row(default, modified)
+
+def generate_ruleset_sequence():
+    ruleset = RuleSet()
+    ruleset.stage_hazards = False
+    ruleset.generate_ruleset_sequence()
+    print(ruleset.sequence)

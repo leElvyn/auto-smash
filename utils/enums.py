@@ -45,3 +45,38 @@ class Controls(Enum):
     # Stick controls
     SMASH_ATTACKS = 6
     TILT_ATTACKS = 7
+
+class StageSelectionType(Enum):
+    anyone = 0
+    take_turns = 1
+    loser_pick = 2
+    in_order = 3
+    random = 4
+    bf_o = 5
+    bf_only = 6
+    o_only = 7
+
+class TimeValues(Enum):
+    inf = 0
+    t1_00 = 1
+    t1_30 = 1.5
+    t2_00 = 2
+    t2_30 = 2.5
+    t3_00 = 3
+    t4_00 = 4
+    t5_00 = 5
+    t6_00 = 6
+    t7_00 = 7
+    t8_00 = 8
+    t9_00 = 9
+    t10_00 = 10
+    t11_00 = 11
+    t12_00 = 12
+    t13_00 = 13
+    t14_00 = 14
+    t15_00 = 15
+    t16_00 = 16
+    t17_00 = 17
+    t18_00 = 18
+    t19_00 = 19
+    t20_00 = 20

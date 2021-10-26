@@ -8,7 +8,7 @@
             "name": "Python : Fichier actuel",
             "type": "python",
             "request": "launch",
-            "program": "utils/controls_maker.py",
+            "program": "utils/main.py",
             "console": "integratedTerminal"
         }
     ]

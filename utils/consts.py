@@ -33,3 +33,36 @@ CONTROLS_ORDER_DPAD = [
     Controls.GRAB,
     Controls.TAUNT
 ]
+
+RULESET_ORDERS = [
+    # This is only for stocks
+    [
+        # major options
+        "style",
+        "stock",
+        "time",
+        "fs_meter",
+        "spirits",
+        "cpu_lvl",
+        "damage_handicap",
+        "stage_selection",
+    ],
+    [
+        "items"
+    ],
+    [
+        "stages"
+    ],
+    [
+        # advanced
+        "first_to",
+        "stage_morph",
+        "stage_hazards",
+        "friendly_fire",
+        "launch_rate",
+        "underdog_boost",
+        "pause",
+        "score",
+        "show_damage"
+    ]
+]
