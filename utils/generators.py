@@ -3,8 +3,8 @@ This file will generate sequences for complex bits of the script.
 This includes the path to enter a tag on the keyboard, or the stages to enable/disable.
 """
 
-from numpy.core.numeric import full
-from typing import TYPE_CHECKING, Sequence
+import numpy
+
 from enums import *
 from consts import *
 from buttons import *
@@ -83,7 +83,7 @@ class Keyboard:
 
         finder = AStarFinder(diagonal_movement=DiagonalMovement.never)
         path, runs = finder.find_path(start, end, grid)
-        print('operations:', runs, 'path length:', len(path))
+
         return path, key_position
 
         
@@ -290,7 +290,63 @@ def generate_controls_sequence_gc():
 
 class Stages:
     """I don't want to do that ... please"""
-    pass
+    stage_list = STAGE_LIST
+    empty_list = STAGE_LIST_EMPTY
+
+    def __init__(self):
+        self.finder = AStarFinder(diagonal_movement=DiagonalMovement.never)
+
+    def get_stage_location(self, key)->list:
+        """Returns the location of the key on the keyboard."""
+        for row in self.keyboard:
+            if key in row:
+                return (row.index(key), self.keyboard.index(row))
+        raise Exception("Key not found on keyboard.")
+
+
+    def pathfind_stage(self, stage_location, location)->list:
+        """
+        Returns a list of coordinates to press the key.
+        The location is the current location of the cursor on the keyboard.
+        """
+
+        grid = Grid(matrix=self.empty_list)
+        start = grid.node(location[0], location[1])
+        end = grid.node(stage_location[0], stage_location[1])
+
+        finder = AStarFinder(diagonal_movement=DiagonalMovement.never)
+        path, runs = finder.find_path(start, end, grid)
+
+        return path, stage_location
+
+    def find_closest_stage(self, reaming_stages_coordonates, location):
+        """
+        Tests the distance between the location and the remaining stages.
+        Returns the closest stage.
+        """
+        closest_stage = None
+        closest_distance = None
+        for stage in reaming_stages_coordonates:
+            path, _ = self.pathfind_stage(stage, location)
+            distance = len(path)
+            if closest_distance is None or distance < closest_distance:
+                closest_distance = distance
+                closest_stage = stage
+        return closest_stage
+
+    def find_str_in_2d_array(self, string):
+        """
+        Returns the location of the string in the 2d array.
+        """
+        for row in self.stage_list:
+            if string in row:
+                return (row.index(string), self.stage_list.index(row))
+
+    def stage_names_to_coordinates(self, stages):
+        stages_coordonates = []
+        for stage in stages:
+            stages_coordonates.append(self.find_str_in_2d_array(stage))
+        return stages_coordonates        
 
 class RuleSet:
     style = 0 # 0 : time, 1 : stock, 2 : stamina
@@ -316,6 +372,10 @@ class RuleSet:
     show_damage = True
 
     sequence = []
+
+    stages = []
+
+    ruleset_name = "competitif"
 
     def __init__(self):
         self.style = 1 # competitive is in stock.
@@ -377,15 +437,51 @@ class RuleSet:
         # Stages
         # I don't wanna do that
         # stages
+        if self.stages != []:
+            extend(self.sequence, Buttons.A, delay=30)
+            extend(self.sequence, Buttons.LEFT, delay = 4)
+            extend(self.sequence, Buttons.A, delay = 6)
+            self.generate_stages_path(self.stages)
+            extend(self.sequence, Buttons.B, delay=30)
         extend(self.sequence, Buttons.DOWN, delay=4)
         
         extend(self.sequence, Buttons.A, delay = 7)
         extend(self.sequence, Buttons.DOWN, delay=4)
         default, modified = self.get_changed_rules(RULESET_ORDERS[3])
         self.crawl_row(default, modified)
+        extend(self.sequence, Buttons.DOWN, delay=4)
+        extend(self.sequence, Buttons.A, delay=50)
+        self.sequence.extend(generate_keyboard_path(self.ruleset_name))
+        return self.sequence
+        
+
+    def generate_stages_path(self, stage_names:list) -> list:
+        """
+        We take the list of the stages, and we generate a list of inputs to go to each stage.
+        This is hard.
+        - Why ?
+        Because, unlike with the keyboard, where there is a clear order of the keys. Here, we are cursed with the ability to optimize the pathfinding.
+        This is also known as the Traveling Salesman Problem.
+        We are just implementing the greedy algorithm.
+        """
+        stages = Stages()
+        full_path = [] # the full path is a list of lists of coordinates to press the keys
+        path = [] # the path is the temporary list of coordinates to go from one key to another
+        location = [0, 0] #This is the initial location of the cursor on the beyboard.
+        reaming_stages = stages.stage_names_to_coordinates(stage_names)
+
+        for _ in range(len(reaming_stages)):
+            closest_stage = stages.find_closest_stage(reaming_stages, location)
+            path, location = stages.pathfind_stage(closest_stage, location) # the position of the current key is the new starting point for the next key
+            full_path.append(path) # add the path from the previous key to the current key to the full path
+            print("############")
+            extend(full_path, Buttons.A) # press A after each key
+            reaming_stages.remove(closest_stage) # remove the stage from reaming list
+        full_sequence = generate_sequence_from_list(full_path)
+        self.sequence.extend(full_sequence)
 
 def generate_ruleset_sequence():
     ruleset = RuleSet()
     ruleset.stage_hazards = False
     ruleset.generate_ruleset_sequence()
-    print(ruleset.sequence)
+    return ruleset.sequence
