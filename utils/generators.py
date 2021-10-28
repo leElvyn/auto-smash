@@ -132,6 +132,8 @@ class ControlScheme:
     extra_tap_jump = 1 #same 
     extra_sensibility = 1 # 0-2 for sensibility, left to right
 
+    cursor_location = 0
+
 
     def get_changed_controls(self) -> list:
         """
@@ -175,33 +177,30 @@ class ControlScheme:
         delay(sequence, 10)
         return sequence
 
-    def crawl_row(self, sequence, changes, ROW, cursor_location, reverse = False, is_left_row = False) -> int:
+    def crawl_row(self, sequence, changes, ROW, reverse = False, is_left_row = False) -> int:
         for control in changes:
             new_cursor_location = ROW.index(control)
-            for i in range(new_cursor_location - cursor_location):
+            for i in range(new_cursor_location - self.cursor_location):
                 extend(sequence, Buttons.UP if reverse else Buttons.DOWN)
-                cursor_location += 1
+                self.cursor_location += 1
             extend(sequence, Buttons.A)
             delay(sequence, 10)
-            extend(sequence, self.select_control(getattr(self.__class__, control), getattr(self, control), is_dpad=True if cursor_location > 0 and cursor_location < 4 and is_left_row else False))
-        return cursor_location
+            extend(sequence, self.select_control(getattr(self.__class__, control), getattr(self, control), is_dpad=True if self.cursor_location > 0 and self.cursor_location < 4 and is_left_row else False))
 
     def crawl_right_row(self, sequence, right_row_changes, RIGHT_ROW, is_reverse = False):
-        cursor_location = 0 # location of the cursor on the right row only.
         for control in right_row_changes:
             new_cursor_location = RIGHT_ROW.index(control)
-            for i in range(new_cursor_location - cursor_location):
+            for i in range(new_cursor_location - self.cursor_location):
                 extend(sequence, Buttons.DOWN)
             extend(sequence, Buttons.A)
             delay(sequence, 10)
             extend(sequence, self.select_control(getattr(self.__class__, control), getattr(self, control)))
-        return cursor_location
 
     def crawl_extras(self, sequence, extra_controls_changes, EXTRA_CONTROLS):
-        cursor_location = 0
+        extras_cursor_location = 0
         for control in extra_controls_changes:
             new_cursor_location = EXTRA_CONTROLS.index(control)
-            for i in range(new_cursor_location - cursor_location):
+            for i in range(new_cursor_location - extras_cursor_location):
                 extend(sequence, Buttons.DOWN)
 
             if control != "extra_sensibility": #sensibility doesn't work the same way
@@ -245,22 +244,21 @@ class ControlScheme:
         go_to_right_row = len(right_row_changes) > 0
         go_to_extras = len(extra_controls_changes) > 0
         go_to_c_stick = MIDDLE_ROW in changed_controls
-        cursor_location = 0
 
         if go_to_left_row:
-            cursor_location = self.crawl_row(sequence, left_row_changes, LEFT_ROW, cursor_location, is_left_row=True)
+            self.crawl_row(sequence, left_row_changes, LEFT_ROW, is_left_row=True)
             if go_to_extras:
-                if cursor_location != 4: #if we aren't already on the other settings menu 
-                    for i in range(4 - cursor_location):
+                if self.cursor_location != 4: #if we aren't already on the other settings menu 
+                    for i in range(4 - self.cursor_location):
                         extend(sequence, Buttons.DOWN)
                 extend(sequence, Buttons.A)
                 delay(sequence, 20)
                 self.crawl_extras(sequence, extra_controls_changes, EXTRA_CONTROLS)
-                cursor_location = 4
+                self.cursor_location = 4
             if go_to_c_stick or go_to_right_row:
 
-                if cursor_location < 3: #if we aren't already on the the down taunt button, or the other settings, both lead to the c stick
-                    for i in range(3 - cursor_location):
+                if self.cursor_location < 3: #if we aren't already on the the down taunt button, or the other settings, both lead to the c stick
+                    for i in range(3 - self.cursor_location):
                         extend(sequence, Buttons.DOWN)
                 extend(sequence, Buttons.RIGHT)
                 if go_to_c_stick:
@@ -269,7 +267,7 @@ class ControlScheme:
                     self.select_control(self.__class__.R_STICK, self.R_STICK, True)
                 extend(sequence, Buttons.RIGHT)
                 if go_to_right_row:
-                    self.crawl_row(sequence, right_row_changes, RIGHT_ROW, cursor_location, True)
+                    self.crawl_row(sequence, right_row_changes, RIGHT_ROW, True)
         extend(sequence, Buttons.PLUS)
         return sequence
 
