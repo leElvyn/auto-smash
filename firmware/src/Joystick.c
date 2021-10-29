@@ -407,7 +407,7 @@ void GetNextReport(USB_JoystickReport_Input_t *const ReportData)
 			ReportData->Button |= SWITCH_R;
 			break;
 
-		case 15:
+		case 17:
 			ReportData->Button |= SWITCH_PLUS;
 			break;
 

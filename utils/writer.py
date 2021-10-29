@@ -8,11 +8,12 @@ def write_data(data):
     """
     This function will write the data to the board.
     """
+    print(type(data))
     print("Waiting for board to be plugged in ...")
     timeout = 0
     while True:
-        if os.path.exists("/Volumes/LUFA BOOT"):
-            with open("/Volumes/LUFA BOOT/SCRIPT.BIN", 'wb') as f:
+        if os.path.exists("G:/"):
+            with open("G:/SCRIPT.BIN", 'wb') as f:
                 print("Writing data to board ...")
                 f.write(data)
                 f.close()

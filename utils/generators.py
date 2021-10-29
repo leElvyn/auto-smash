@@ -102,6 +102,7 @@ def generate_keyboard_path(tag: str) -> list:
         extend(full_path, Buttons.A) # press A after each key
     
     full_sequence = generate_sequence_from_list(full_path)
+    delay(full_sequence, 15)
     extend(full_sequence, Buttons.PLUS)
     extend(full_sequence, Buttons.PLUS, delay=3)
     return full_sequence
@@ -325,6 +326,7 @@ class Stages:
         closest_stage = None
         closest_distance = None
         for stage in reaming_stages_coordonates:
+            print(stage)
             path, _ = self.pathfind_stage(stage, location)
             distance = len(path)
             if closest_distance is None or distance < closest_distance:
@@ -403,9 +405,9 @@ class RuleSet:
 
         for _ in range(abs(movement)):
             if movement > 0:
-                extend(self.sequence, Buttons.RIGHT, delay=4)
+                extend(self.sequence, Buttons.RIGHT, delay=1)
             else:
-                extend(self.sequence, Buttons.LEFT, delay=4)
+                extend(self.sequence, Buttons.LEFT, delay=1)
 
     def crawl_row(self, default, modified):
         if len(default) != len(modified):
@@ -416,40 +418,51 @@ class RuleSet:
                     self.edit_boolean_field(modified)
                 elif type(modified[i]) == int:
                     self.edit_int_field(default[i], modified[i])
-            extend(self.sequence, Buttons.DOWN, delay=5)
+            extend(self.sequence, Buttons.DOWN, delay=1)
 
     def generate_ruleset_sequence(self):
         """This method is a flow, from the normal rules, to the items, to the stages, to the advanced."""
+        # main menu to rulesets
+        extend(self.sequence, Buttons.A, delay=10)
+        extend(self.sequence, Buttons.A, delay=5)
+        extend(self.sequence, Buttons.A, delay=130)
+        extend(self.sequence, Buttons.UP, delay=3)
+        extend(self.sequence, Buttons.A, delay=20)
+
         # normal options are the easiest
         default, modified = self.get_changed_rules(RULESET_ORDERS[0])
         self.crawl_row(default, modified)
 
         # Next are items 
         # we just disable items.
-        extend(self.sequence, Buttons.A, delay=10)
+        extend(self.sequence, Buttons.A, delay=15)
         extend(self.sequence, Buttons.LEFT, delay=3)
         extend(self.sequence, Buttons.A, delay=5)
-        extend(self.sequence, Buttons.B, delay=25)
+        extend(self.sequence, Buttons.B, delay=13)
         extend(self.sequence, Buttons.DOWN, delay=4)
 
         # Stages
         # I don't wanna do that
         # stages
         if self.stages != []:
-            extend(self.sequence, Buttons.A, delay=30)
+            extend(self.sequence, Buttons.A, delay=15)
             extend(self.sequence, Buttons.LEFT, delay = 4)
             extend(self.sequence, Buttons.A, delay = 6)
             self.generate_stages_path(self.stages)
-            extend(self.sequence, Buttons.B, delay=30)
+            extend(self.sequence, Buttons.B, delay=13)
         extend(self.sequence, Buttons.DOWN, delay=4)
         
         extend(self.sequence, Buttons.A, delay = 7)
         extend(self.sequence, Buttons.DOWN, delay=4)
         default, modified = self.get_changed_rules(RULESET_ORDERS[3])
         self.crawl_row(default, modified)
-        extend(self.sequence, Buttons.DOWN, delay=4)
         extend(self.sequence, Buttons.A, delay=50)
         self.sequence.extend(generate_keyboard_path(self.ruleset_name))
+        add_button(self.sequence, Buttons.LEFT, 40)
+        add_button(self.sequence, Buttons.UP, 10)
+        add_button(self.sequence, Buttons.A, 1)
+
+
         return self.sequence
         
 
@@ -480,6 +493,11 @@ class RuleSet:
 
 def generate_ruleset_sequence():
     ruleset = RuleSet()
+    ruleset.ruleset_name = "wanted x zevent"
+    ruleset.time = 9
+    ruleset.stages = ["battlefield", "small_battlefield", "yoshis_story", "pokémon_stadium_2", "lylat_cruise", "hollow_bastion" ,"final_destination", "smashville"]
+    delay(ruleset.sequence, 100)
     ruleset.stage_hazards = False
     ruleset.generate_ruleset_sequence()
+    print(ruleset.sequence)
     return ruleset.sequence

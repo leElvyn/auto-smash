@@ -13,8 +13,8 @@ def extend(sequence, button: Buttons, duration = 1, delay = 1):
     """
     extend the sequence with a delay of 1 (default) frame followed by the button for 1 frame (default)
     """
-    add_button(sequence, Buttons.NOTHING, delay)
     add_button(sequence, button, duration)
+    add_button(sequence, Buttons.NOTHING, delay)
 
 def delay(sequence, delay: int):
     """
