@@ -10,13 +10,15 @@ from writer import write_data
 
 
 if __name__ == "__main__":
-    """tag = input("Username ?\n> ")
-    path = generate_keyboard_path(tag)
-    byte_path = prepare_for_flashing(path)
+    tag = "red" # input("Username ?\n> ")
+    path = generate_controls_sequence_gc(tag)
     print(path)
-    print(byte_path)"""
+    byte_path = prepare_for_flashing(path)
+    print(byte_path)
+    write_data(byte_path)
+    """
     #print(generate_controls_sequence_gc())
     sequence = generate_ruleset_sequence()
     
     byte_path = prepare_for_flashing(sequence)
-    write_data(byte_path)
+    write_data(byte_path)"""

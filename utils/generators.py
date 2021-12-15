@@ -8,6 +8,7 @@ import numpy
 from enums import *
 from consts import *
 from buttons import *
+import sequences
 
 from pathfinding.core.diagonal_movement import DiagonalMovement
 from pathfinding.core.grid import Grid
@@ -137,6 +138,7 @@ class ControlScheme:
     extra_sensibility = 1 # 0-2 for sensibility, left to right
 
     cursor_location = 0
+    tag = ""
 
 
     def get_changed_controls(self) -> list:
@@ -181,15 +183,15 @@ class ControlScheme:
         delay(sequence, 10)
         return sequence
 
-    def crawl_row(self, sequence, changes, ROW, reverse = False, is_left_row = False) -> int:
+    def crawl_row(self, changes, ROW, reverse = False, is_left_row = False) -> int:
         for control in changes:
             new_cursor_location = ROW.index(control)
             for i in range(new_cursor_location - self.cursor_location):
-                extend(sequence, Buttons.UP if reverse else Buttons.DOWN)
+                extend(self.sequence, Buttons.UP if reverse else Buttons.DOWN)
                 self.cursor_location += 1
-            extend(sequence, Buttons.A)
-            delay(sequence, 10)
-            extend(sequence, self.select_control(getattr(self.__class__, control), getattr(self, control), is_dpad=True if self.cursor_location > 0 and self.cursor_location < 4 and is_left_row else False))
+            extend(self.sequence, Buttons.A)
+            delay(self.sequence, 10)
+            extend(self.sequence, self.select_control(getattr(self.__class__, control), getattr(self, control), is_dpad=True if self.cursor_location > 0 and self.cursor_location < 4 and is_left_row else False))
 
     def crawl_right_row(self, sequence, right_row_changes, RIGHT_ROW, is_reverse = False):
         for control in right_row_changes:
@@ -200,24 +202,25 @@ class ControlScheme:
             delay(sequence, 10)
             extend(sequence, self.select_control(getattr(self.__class__, control), getattr(self, control)))
 
-    def crawl_extras(self, sequence, extra_controls_changes, EXTRA_CONTROLS):
+    def crawl_extras(self, extra_controls_changes, EXTRA_CONTROLS):
+        
         extras_cursor_location = 0
         for control in extra_controls_changes:
             new_cursor_location = EXTRA_CONTROLS.index(control)
             for i in range(new_cursor_location - extras_cursor_location):
-                extend(sequence, Buttons.DOWN)
+                extend(self.sequence, Buttons.DOWN)
 
             if control != "extra_sensibility": #sensibility doesn't work the same way
                 # we always need to press left to change the control
-                extend(sequence, Buttons.LEFT)
+                extend(self.sequence, Buttons.LEFT)
             
             else:
                 if getattr(self, control) == 0:
-                    extend(sequence, Buttons.LEFT)
+                    extend(self.sequence, Buttons.LEFT)
 
                 elif getattr(self, control) == 2:
-                    extend(sequence, Buttons.LEFT, Buttons.RIGHT)
-        extend(sequence, Buttons.PLUS)
+                    extend(self.sequence, Buttons.LEFT, Buttons.RIGHT)
+        extend(self.sequence, Buttons.PLUS)
 
     def generate_controls_sequence_gc(self):
         """
@@ -233,7 +236,32 @@ class ControlScheme:
         Sometimes, an attribute is known with 
         """
         changed_controls = self.get_changed_controls()
-        sequence = []
+        self.sequence = []
+        
+        delay(self.sequence, 250)
+
+        extend(self.sequence, Buttons.DOWN)
+        extend(self.sequence, Buttons.DOWN)
+        extend(self.sequence, Buttons.RIGHT)
+        extend(self.sequence, Buttons.A, delay=90)
+        extend(self.sequence, Buttons.RIGHT)
+        extend(self.sequence, Buttons.UP, delay=10)
+        extend(self.sequence, Buttons.X, delay=16)
+        extend(self.sequence, Buttons.RIGHT, delay=2)
+        extend(self.sequence, Buttons.A, delay=20)
+        extend(self.sequence, Buttons.DOWN, delay=15)
+        extend(self.sequence, Buttons.A, delay=70)
+
+        keyboard_sequence = generate_keyboard_path(self.tag)
+        self.sequence.extend(keyboard_sequence)
+
+        delay(self.sequence, 120)
+        extend(self.sequence, Buttons.RIGHT, delay=2)
+        extend(self.sequence, Buttons.RIGHT, delay=2)
+        extend(self.sequence, Buttons.A, delay=30)
+
+        self.sequence.extend(sequences.test_personal_sequence())
+        return
 
         LEFT_ROW = ["L", "D_UP", "D_MIDDLE", "D_RIGHT"]
         RIGHT_ROW = ["R", "Z", "X", "Y", "A", "B"]
@@ -249,43 +277,45 @@ class ControlScheme:
         go_to_extras = len(extra_controls_changes) > 0
         go_to_c_stick = MIDDLE_ROW in changed_controls
 
-        if go_to_left_row:
-            self.crawl_row(sequence, left_row_changes, LEFT_ROW, is_left_row=True)
+        if go_to_left_row or go_to_extras:
+            self.crawl_row(left_row_changes, LEFT_ROW, is_left_row=True)
             if go_to_extras:
                 if self.cursor_location != 4: #if we aren't already on the other settings menu 
                     for i in range(4 - self.cursor_location):
-                        extend(sequence, Buttons.DOWN)
-                extend(sequence, Buttons.A)
-                delay(sequence, 20)
-                self.crawl_extras(sequence, extra_controls_changes, EXTRA_CONTROLS)
+                        extend(self.sequence, Buttons.DOWN)
+                extend(self.sequence, Buttons.A)
+                delay(self.sequence, 20)
+                self.crawl_extras(extra_controls_changes, EXTRA_CONTROLS)
                 self.cursor_location = 4
             if go_to_c_stick or go_to_right_row:
 
                 if self.cursor_location < 3: #if we aren't already on the the down taunt button, or the other settings, both lead to the c stick
                     for i in range(3 - self.cursor_location):
-                        extend(sequence, Buttons.DOWN)
-                extend(sequence, Buttons.RIGHT)
+                        extend(self.sequence, Buttons.DOWN)
+                extend(self.sequence, Buttons.RIGHT)
                 if go_to_c_stick:
-                    extend(sequence, Buttons.A)
-                    delay(sequence, 10)
+                    extend(self.sequence, Buttons.A)
+                    delay(self.sequence, 10)
                     self.select_control(self.__class__.R_STICK, self.R_STICK, True)
-                extend(sequence, Buttons.RIGHT)
+                extend(self.sequence, Buttons.RIGHT)
                 if go_to_right_row:
-                    self.crawl_row(sequence, right_row_changes, RIGHT_ROW, True)
-        extend(sequence, Buttons.PLUS)
-        return sequence
+                    self.crawl_row(right_row_changes, RIGHT_ROW, True)
+        extend(self.sequence, Buttons.PLUS)
+        self.sequence = flatten_list(self.sequence)
 
-def generate_controls_sequence_gc():
+def generate_controls_sequence_gc(tag):
     """
     Returns a list of inputs to change the control scheme.
     This will probably be ugly.
     """
     controller = ControlScheme()
+    controller.tag = tag
     controller.L = Controls.SPECIAL_ATTACK
     controller.D_UP = Controls.SHIELD
     controller.extra_tap_jump = 0
     controller.R_STICK = Controls.NORMAL_ATTACK
-    return controller.generate_controls_sequence_gc()
+    controller.generate_controls_sequence_gc()
+    return controller.sequence
 
 class Stages:
     """I don't want to do that ... please"""
