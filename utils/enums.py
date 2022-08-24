@@ -23,6 +23,8 @@ class Buttons(Enum):
     ZR = 16
     PLUS = 17
     MINUS = 18
+    LCLICK = 19
+    RCLICK = 20
 
     # currently, axes are just for enums   
     L_STICK = None

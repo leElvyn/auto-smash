@@ -98,7 +98,11 @@ def generate_keyboard_path(tag: str) -> list:
         if char == " ":
             extend(full_path, Buttons.Y)
             continue
-        path, location = keyboard.pathfind_key(char, location) # the position of the current key is the new starting point for the next key
+        if char.isupper():
+            extend(full_path, Buttons.RCLICK)
+            path, location = keyboard.pathfind_key(char.lower(), location) # the position of the current key is the new starting point for the next key
+        else:
+            path, location = keyboard.pathfind_key(char, location) # the position of the current key is the new starting point for the next key
         full_path.append(path) # add the path from the previous key to the current key to the full path
         extend(full_path, Buttons.A) # press A after each key
     
@@ -523,7 +527,7 @@ class RuleSet:
 
 def generate_ruleset_sequence():
     ruleset = RuleSet()
-    ruleset.ruleset_name = "wanted x zevent"
+    ruleset.ruleset_name = "Ultimate Wanted 4"
     ruleset.time = 9
     ruleset.stages = ["battlefield", "small_battlefield", "yoshis_story", "pokémon_stadium_2", "lylat_cruise", "hollow_bastion" ,"final_destination", "smashville"]
     delay(ruleset.sequence, 100)
