@@ -469,7 +469,7 @@ class RuleSet:
         extend(self.sequence, Buttons.A, delay=6)
         extend(self.sequence, Buttons.RIGHT, delay=4)
         extend(self.sequence, Buttons.A, delay=12)
-        extend(self.sequence, Buttons.A, delay=20)
+        extend(self.sequence, Buttons.A, delay=40)
         extend(self.sequence, Buttons.UP, delay=4)
 
         # normal options are the easiest
