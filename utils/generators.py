@@ -461,16 +461,9 @@ class RuleSet:
         extend(self.sequence, Buttons.A, delay=5)
         extend(self.sequence, Buttons.A, delay=130)
         extend(self.sequence, Buttons.UP, delay=3)
-        extend(self.sequence, Buttons.UP, delay=1)
-        extend(self.sequence, Buttons.UP, delay=10)
+        extend(self.sequence, Buttons.A, delay=20)
+
         #Delete the last ruleset
-        extend(self.sequence, Buttons.X, delay=10)
-        extend(self.sequence, Buttons.DOWN, delay=3)
-        extend(self.sequence, Buttons.A, delay=6)
-        extend(self.sequence, Buttons.RIGHT, delay=4)
-        extend(self.sequence, Buttons.A, delay=12)
-        extend(self.sequence, Buttons.A, delay=200)
-        extend(self.sequence, Buttons.UP, delay=4)
 
         # normal options are the easiest
         default, modified = self.get_changed_rules(RULESET_ORDERS[0])
@@ -541,6 +534,7 @@ def generate_ruleset_sequence():
     ruleset.stages = ["battlefield", "small_battlefield", "yoshis_story", "pokémon_stadium_2", "lylat_cruise", "hollow_bastion" ,"final_destination", "smashville"]
     delay(ruleset.sequence, 100)
     ruleset.stage_hazards = False
+    ruleset.friendly_fire = True
     ruleset.generate_ruleset_sequence()
     print(ruleset.sequence)
     return ruleset.sequence

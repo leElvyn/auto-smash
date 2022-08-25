@@ -1,3 +1,8 @@
 {
-    "python.formatting.provider": "black"
+    "python.formatting.provider": "black",
+    "files.associations": {
+        "*.dj": "django-html",
+        "*.toml": "toml",
+        "bootloaderhid.h": "c"
+    }
 }

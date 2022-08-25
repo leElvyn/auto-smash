@@ -12,8 +12,8 @@ def write_data(data):
     print("Waiting for board to be plugged in ...")
     timeout = 0
     while True:
-        if os.path.exists("/Users/red/dev") or True:
-            with open("/Users/red/dev/EEPROM.BIN", 'wb') as f:
+        if os.path.exists("G:/") or True:
+            with open("G:/EEPROM.BIN", 'wb') as f:
                 print("Writing data to board ...")
                 f.write(data)
                 f.close()
