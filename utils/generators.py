@@ -538,7 +538,7 @@ def generate_ruleset_sequence():
     ruleset = RuleSet()
     ruleset.ruleset_name = "Ultimate Wanted 4"
     ruleset.time = 9
-    ruleset.stages = ["battlefield", "small_battlefield", "yoshis_story", "pokémon_stadium_2", "lylat_cruise", "hollow_bastion" ,"final_destination", "smashville"]
+    ruleset.stages = ["battlefield", "small_battlefield", "yoshis_story", "pokémon_stadium_2", "lylat_cruise", "hollow_bastion" ,"final_destination", "smashville", "town_and_city"]
     delay(ruleset.sequence, 100)
     ruleset.stage_hazards = False
     ruleset.generate_ruleset_sequence()
